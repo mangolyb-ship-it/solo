@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solo Leveling: Habit Tracker</title>
+    <style>
+        :root {
+            --primary-color: #000000;
+            --secondary-color: #0a0a1a;
+            --accent-color: #0066ff;
+            --accent-light: #3399ff;
+            --accent-glow: rgba(0, 102, 255, 0.5);
+            --text-color: #ffffff;
+            --text-secondary: #cccccc;
+            --danger-color: #ff3333;
+            --success-color: #33cc33;
+            --warning-color: #ffcc00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            padding-bottom: 80px; /* Для навигационной панели */
+        }
+
+        /* Навигационная панель */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--secondary-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            border-top: 2px solid var(--accent-color);
+            z-index: 1000;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            color: var(--accent-color);
+        }
+
+        .nav-item i {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        /* Заголовок */
+        .header {
+            text-align: center;
+            padding: 15px 0;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color), var(--primary-color));
+            border-bottom: 2px solid var(--accent-color);
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, var(--accent-color), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .header p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Карточки */
+        .card {
+            background-color: var(--secondary-color);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--accent-color);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            position: relative;
+            display: inline-block;
+            text-shadow: 0 0 5px var(--accent-glow);
+        }
+
+        .card-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--accent-color);
+            box-shadow: 0 0 5px var(--accent-glow);
+        }
+
+        /* Профиль */
+        .profile-info {
+            margin-bottom: 20px;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .username {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        .level-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .level {
+            font-size: 1.2rem;
+            margin-right: 10px;
+            color: var(--accent-color);
+            text-shadow: 0 0 5px var(--accent-glow);
+        }
+
+        .level-info i {
+            color: var(--warning-color);
+            cursor: pointer;
+            text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+        }
+
+        .xp-bar {
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .xp-progress {
+            height: 100%;
+            background: linear-gradient(to right, var(--accent-color), var(--accent-light));
+            border-radius: 5px;
+            box-shadow: 0 0 5px var(--accent-glow);
+        }
+
+        .xp-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .rank {
+            display: inline-block;
+            padding: 5px 10px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .account-age {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+            text-shadow: 0 0 5px var(--accent-glow);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Задания */
+        .difficulty-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .difficulty-tab {
+            padding: 10px 15px;
+            background-color: rgba(0, 0, 0, 0.3);
+            margin-right: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .difficulty-tab.active {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .task-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .task-card {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid var(--accent-color);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
+        }
+
+        .task-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+            text-shadow: 0 0 5px var(--accent-glow);
+        }
+
+        .task-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .task-instruction {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .task-counter {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .counter-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 5px var(--accent-glow);
+        }
+
+        .counter-value {
+            font-size: 1.2rem;
+        }
+
+        .complete-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, var(--success-color), #66ff66);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(51, 204, 51, 0.5);
+        }
+
+        .complete-btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .timer {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Настройки */
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-label {
+            font-size: 1.1rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .delete-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--danger-color), #ff6666);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+        }
+
+        .social-link {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .social-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--accent-glow);
+        }
+
+        .version-info {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Заметки и история */
+        .notes-section {
+            margin-bottom: 20px;
+        }
+
+        .bmi-calculator {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bmi-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .bmi-input {
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--accent-color);
+            border-radius: 5px;
+            color: white;
+        }
+
+        .bmi-result {
+            text-align: center;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .history-task {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .history-date {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .history-count {
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--secondary-color);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--accent-color);
+            position: relative;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .modal-text {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            color: var(--text-color);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .modal-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--accent-color);
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Окно информации об уровне */
+        .level-modal {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--secondary-color);
+            border-top: 2px solid var(--accent-color);
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            z-index: 1500;
+            box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.5);
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .level-modal-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .level-modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            text-align: center;
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .level-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .level-info-item {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .level-info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+            text-shadow: 0 0 5px var(--accent-glow);
+        }
+
+        .level-info-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .ranks-list {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .rank-item {
+            padding: 10px 15px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .rank-item.current {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .close-level-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Экран входа */
+        .auth-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background-color: var(--primary-color);
+        }
+
+        .auth-container {
+            background-color: var(--secondary-color);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--accent-color);
+        }
+
+        .auth-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--accent-color), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .auth-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: var(--text-secondary);
+        }
+
+        .auth-form {
+            width: 100%;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .auth-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-btn.primary {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            color: white;
+        }
+
+        .auth-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .auth-switch {
+            margin-top: 20px;
+            color: var(--text-secondary);
+        }
+
+        .auth-switch a {
+            color: var(--accent-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .task-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .auth-container {
+                padding: 30px 20px;
+            }
+            
+            .auth-buttons {
+                flex-direction: column;
+            }
+            
+            .level-info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .bmi-form {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Экран входа -->
+    <div id="authScreen" class="auth-screen">
+        <div class="auth-container">
+            <h1 class="auth-title">SOLO LEVELING</h1>
+            <p class="auth-subtitle">HABIT TRACKER</p>
+            
+            <div id="loginForm" class="auth-form">
+                <h2 class="card-title">Вход в царство богов</h2>
+                <input type="text" id="loginUsername" class="input-field" placeholder="Ваш никнейм">
+                <input type="password" id="loginPassword" class="input-field" placeholder="Ваш пароль">
+                <div class="auth-buttons">
+                    <button id="loginBtn" class="auth-btn primary">Войти</button>
+                </div>
+                <div class="auth-switch">
+                    Нет аккаунта? <a id="showRegister">Зарегистрироваться</a>
+                </div>
+            </div>
+            
+            <div id="registerForm" class="auth-form" style="display: none;">
+                <h2 class="card-title">Создание аккаунта</h2>
+                <input type="text" id="registerUsername" class="input-field" placeholder="Придумайте никнейм">
+                <input type="password" id="registerPassword" class="input-field" placeholder="Придумайте пароль">
+                <input type="password" id="confirmPassword" class="input-field" placeholder="Подтвердите пароль">
+                <div class="auth-buttons">
+                    <button id="registerBtn" class="auth-btn primary">Создать аккаунт</button>
+                </div>
+                <div class="auth-switch">
+                    Уже есть аккаунт? <a id="showLogin">Войти</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div id="mainContent" style="display: none;">
+        <div class="header">
+            <div class="container">
+                <h1>SOLO LEVELING</h1>
+                <p>HABIT TRACKER</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Профиль -->
+            <div id="profileSection" class="section">
+                <div class="card">
+                    <h2 class="card-title">Профиль</h2>
+                    <div class="profile-info">
+                        <div class="user-details">
+                            <div class="username" id="displayUsername">Sung Jin-Woo</div>
+                            <div class="level-info">
+                                <span class="level">Уровень <span id="userLevel">0</span></span>
+                                <i class="fas fa-exclamation-circle" id="levelInfoBtn"></i>
+                            </div>
+                            <div class="xp-bar">
+                                <div class="xp-progress" id="xpProgress" style="width: 0%;"></div>
+                            </div>
+                            <div class="xp-text" id="xpText">0/20 XP</div>
+                            <div class="rank" id="userRank">Новичок</div>
+                            <div class="account-age" id="accountAge">Аккаунт создан: 0 дней 0 часов</div>
+                        </div>
+                    </div>
+                    
+                    <h3 class="card-title" style="margin-top: 30px;">Статистика</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="easyTasks">0</div>
+                            <div class="stat-label">Легкие задания</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="mediumTasks">0</div>
+                            <div class="stat-label">Средние задания</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="hardTasks">0</div>
+                            <div class="stat-label">Сложные задания</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="hellTasks">0</div>
+                            <div class="stat-label">Адские задания</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Задания -->
+            <div id="tasksSection" class="section" style="display: none;">
+                <div class="card">
+                    <h2 class="card-title">Задания</h2>
+                    
+                    <div class="difficulty-tabs">
+                        <div class="difficulty-tab active" data-difficulty="all">Все</div>
+                        <div class="difficulty-tab" data-difficulty="easy">Легкие</div>
+                        <div class="difficulty-tab" data-difficulty="medium">Средние</div>
+                        <div class="difficulty-tab" data-difficulty="hard">Сложные</div>
+                        <div class="difficulty-tab" data-difficulty="hell">Адские</div>
+                    </div>
+                    
+                    <div class="task-list" id="taskList">
+                        <!-- Задания будут добавляться через JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Настройки -->
+            <div id="settingsSection" class="section" style="display: none;">
+                <div class="card">
+                    <h2 class="card-title">Настройки</h2>
+                    
+                    <div class="settings-item">
+                        <div class="settings-label">Уведомления</div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="notificationsToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <a href="https://t.me/Solo_HBTR" target="_blank" class="social-link">
+                        <i class="fab fa-telegram"></i> Наш Telegram канал
+                    </a>
+                    
+                    <div class="version-info">
+                        Версия: 1.0 (бета F1)
+                    </div>
+                    
+                    <button class="delete-btn" id="deleteAccountBtn">Удалить аккаунт</button>
+                </div>
+            </div>
+
+            <!-- Заметки и история -->
+            <div id="notesSection" class="section" style="display: none;">
+                <div class="card">
+                    <h2 class="card-title">Заметки и история</h2>
+                    
+                    <div class="notes-section">
+                        <h3 class="card-title">Калькулятор ИМТ</h3>
+                        <div class="bmi-calculator">
+                            <div class="bmi-form">
+                                <input type="number" id="bmiAge" class="bmi-input" placeholder="Возраст">
+                                <select id="bmiGender" class="bmi-input">
+                                    <option value="">Выберите пол</option>
+                                    <option value="male">Мужской</option>
+                                    <option value="female">Женский</option>
+                                </select>
+                                <input type="number" id="bmiHeight" class="bmi-input" placeholder="Рост (см)">
+                                <input type="number" id="bmiWeight" class="bmi-input" placeholder="Вес (кг)">
+                            </div>
+                            <button id="calculateBmi" class="complete-btn">Рассчитать ИМТ</button>
+                            <div id="bmiResult" class="bmi-result" style="display: none;">
+                                <!-- Результат будет здесь -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="notes-section">
+                        <h3 class="card-title">История тренировок</h3>
+                        <div class="history-list" id="historyList">
+                            <!-- История будет здесь -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Навигационная панель -->
+        <div class="nav-bar">
+            <div class="nav-item active" data-section="profileSection">
+                <i class="fas fa-user"></i>
+                <span>Профиль</span>
+            </div>
+            <div class="nav-item" data-section="tasksSection">
+                <i class="fas fa-tasks"></i>
+                <span>Задания</span>
+            </div>
+            <div class="nav-item" data-section="notesSection">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Заметки</span>
+            </div>
+            <div class="nav-item" data-section="settingsSection">
+                <i class="fas fa-cog"></i>
+                <span>Настройки</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Окно информации об уровне -->
+    <div id="levelModal" class="level-modal">
+        <button class="close-level-modal" id="closeLevelModal">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="level-modal-content">
+            <h2 class="level-modal-title">Информация об уровне</h2>
+            <div class="level-info-grid">
+                <div class="level-info-item">
+                    <div class="level-info-value" id="modalLevel">0</div>
+                    <div class="level-info-label">Текущий уровень</div>
+                </div>
+                <div class="level-info-item">
+                    <div class="level-info-value" id="modalXP">0/20</div>
+                    <div class="level-info-label">Опыт</div>
+                </div>
+                <div class="level-info-item">
+                    <div class="level-info-value" id="modalNextLevel">20</div>
+                    <div class="level-info-label">XP до след. уровня</div>
+                </div>
+                <div class="level-info-item">
+                    <div class="level-info-value" id="modalRank">Новичок</div>
+                    <div class="level-info-label">Текущий ранг</div>
+                </div>
+            </div>
+            
+            <h3 class="card-title">Система рангов</h3>
+            <div class="ranks-list">
+                <div class="rank-item" data-rank="0">Новичок</div>
+                <div class="rank-item" data-rank="15">Ученик</div>
+                <div class="rank-item" data-rank="50">Воин</div>
+                <div class="rank-item" data-rank="120">Элита</div>
+                <div class="rank-item" data-rank="500">Мастер</div>
+                <div class="rank-item" data-rank="1700">Грандмастер</div>
+                <div class="rank-item" data-rank="2000">Серафим</div>
+                <div class="rank-item" data-rank="5000">Бог</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Данные пользователя
+        let userData = {
+            username: '',
+            level: 0,
+            xp: 0,
+            xpToNextLevel: 20,
+            rank: 'Новичок',
+            stats: {
+                easy: 0,
+                medium: 0,
+                hard: 0,
+                hell: 0
+            },
+            accountCreated: null,
+            completedTasks: {}, // Храним время завершения заданий
+            workoutHistory: [] // История тренировок
+        };
+
+        // Ранги пользователя
+        const ranks = {
+            0: 'Новичок',
+            15: 'Ученик',
+            50: 'Воин',
+            120: 'Элита',
+            500: 'Мастер',
+            1700: 'Грандмастер',
+            2000: 'Серафим',
+            5000: 'Бог'
+        };
+
+          // Задания по сложностям
+        const tasksByDifficulty = {
+            easy: [
+                { id: 1, name: 'Подтягивания', description: 'Выполните подтягивания для укрепления мышц спины и рук', instruction: 'Возьмитесь за перекладину прямым хватом, руки на ширине плеч. Подтянитесь до уровня подбородка, затем медленно опуститесь в исходное положение.', reps: 15, completed: 0, xp: 3 },
+                { id: 2, name: 'Приседания', description: 'Выполните приседания для укрепления ног и ягодиц', instruction: 'Встаньте прямо, ноги на ширине плеч. Медленно опуститесь в присед до параллели бедер с полом, затем вернитесь в исходное положение.', reps: 30, completed: 0, xp: 2 },
+                { id: 3, name: 'Отжимания', description: 'Выполните отжимания для укрепления груди и рук', instruction: 'Примите упор лежа, руки на ширине плеч. Опуститесь до касания грудью пола, затем вернитесь в исходное положение.', reps: 25, completed: 0, xp: 3 },
+                { id: 4, name: 'Планка', description: 'Удерживайте планку для укрепления кора', instruction: 'Примите упор лежа на предплечьях. Держите тело прямо, не прогибаясь в пояснице. Напрягите пресс и ягодицы.', reps: 60, completed: 0, xp: 2 },
+                { id: 5, name: 'Выпады', description: 'Выполните выпады для ног и баланса', instruction: 'Встаньте прямо, сделайте шаг вперед и опуститесь в выпад. Колено задней ноги почти касается пола. Вернитесь в исходное положение.', reps: 20, completed: 0, xp: 2 },
+                { id: 6, name: 'Бег на месте', description: 'Выполните бег на месте для кардио', instruction: 'Бегите на месте, поднимая колени высоко. Держите спину прямой и работайте руками.', reps: 100, completed: 0, xp: 2 },
+                { id: 7, name: 'Прыжки на скакалке', description: 'Выполните прыжки на скакалке', instruction: 'Прыгайте через скакалку, сохраняя ритм. Держите локти близко к телу.', reps: 50, completed: 0, xp: 2 },
+                { id: 8, name: 'Подъемы на носки', description: 'Укрепите икры ног', instruction: 'Встаньте прямо и поднимитесь на носки, затем медленно опуститесь.', reps: 30, completed: 0, xp: 1 },
+                { id: 9, name: 'Скручивания', description: 'Укрепите пресс', instruction: 'Лягте на спину, согните ноги в коленях. Поднимите верхнюю часть тела к коленям, затем медленно опуститесь.', reps: 20, completed: 0, xp: 2 },
+                { id: 10, name: 'Боковая планка', description: 'Укрепите косые мышцы живота', instruction: 'Лягте на бок, обопритесь на локоть. Поднимите таз, образуя прямую линию от головы до ног.', reps: 30, completed: 0, xp: 2 },
+                { id: 11, name: 'Подъем ног лежа', description: 'Укрепите нижний пресс', instruction: 'Лягте на спину, поднимите прямые ноги вертикально, затем медленно опустите.', reps: 15, completed: 0, xp: 2 },
+                { id: 12, name: 'Приседания у стены', description: 'Укрепите ноги и выносливость', instruction: 'Прислонитесь спиной к стене и опуститесь в положение сидя. Удерживайте позицию.', reps: 60, completed: 0, xp: 2 },
+                { id: 13, name: 'Велосипед', description: 'Упражнение для пресса', instruction: 'Лягте на спину, поднимите ноги и имитируйте езду на велосипеде, касаясь локтями противоположных коленей.', reps: 30, completed: 0, xp: 2 },
+                { id: 14, name: 'Пловец', description: 'Укрепите спину и ягодицы', instruction: 'Лягте на живот, поднимите противоположные руку и ногу, затем поменяйте стороны.', reps: 20, completed: 0, xp: 2 },
+                { id: 15, name: 'Мостик', description: 'Укрепите ягодицы и спину', instruction: 'Лягте на спину, согните ноги в коленях. Поднимите таз вверх, затем медленно опустите.', reps: 20, completed: 0, xp: 2 }
+            ],
+            medium: [
+                { id: 16, name: 'Подтягивания с весом', description: 'Выполните подтягивания с дополнительным весом', instruction: 'Используйте пояс с отягощением или держите гантель между ног. Выполняйте подтягивания с контролируемой техникой.', reps: 12, completed: 0, xp: 8 },
+                { id: 17, name: 'Приседания с весом', description: 'Выполните приседания с дополнительным весом', instruction: 'Держите гантели или штангу на плечах. Выполняйте глубокие приседания с прямой спиной.', reps: 20, completed: 0, xp: 7 },
+                { id: 18, name: 'Отжимания с хлопком', description: 'Выполните отжимания с хлопком для взрывной силы', instruction: 'В нижней точке отжимания мощно оттолкнитесь от пола, чтобы сделать хлопок в воздухе, затем мягко приземлитесь.', reps: 15, completed: 0, xp: 8 },
+                { id: 19, name: 'Берпи', description: 'Выполните берпи для комплексной тренировки', instruction: 'Из положения стоя опуститесь в присед, перейдите в упор лежа, выполните отжимание, вернитесь в присед и выпрыгните вверх.', reps: 15, completed: 0, xp: 7 },
+                { id: 20, name: 'Подъем ног в висе', description: 'Выполните подъемы ног для пресса', instruction: 'Повисните на перекладине. Поднимите прямые ноги до параллели с полом, затем медленно опустите. Не раскачивайтесь.', reps: 15, completed: 0, xp: 6 },
+                { id: 21, name: 'Тяга гантели', description: 'Укрепите спину', instruction: 'Обопритесь одной рукой и коленом на скамью. Тяните гантель к поясу, сводя лопатки.', reps: 12, completed: 0, xp: 6 },
+                { id: 22, name: 'Жим гантелей', description: 'Укрепите плечи', instruction: 'Сядьте на скамью, поднимите гантели над головой, затем медленно опустите.', reps: 12, completed: 0, xp: 6 },
+                { id: 23, name: 'Разводка гантелей', description: 'Укрепите грудные мышцы', instruction: 'Лягте на скамью, разведите гантели в стороны, затем сведите их над грудью.', reps: 12, completed: 0, xp: 6 },
+                { id: 24, name: 'Французский жим', description: 'Укрепите трицепс', instruction: 'Лягте на скамью, поднимите гантели над головой. Сгибайте руки в локтях, опуская гантели за голову.', reps: 12, completed: 0, xp: 5 },
+                { id: 25, name: 'Подъем на бицепс', description: 'Укрепите бицепс', instruction: 'Стоя или сидя, поднимайте гантели к плечам, затем медленно опускайте.', reps: 12, completed: 0, xp: 5 },
+                { id: 26, name: 'Махи гантелями', description: 'Укрепите плечи', instruction: 'Наклонитесь вперед, держите гантели перед собой. Разводите руки в стороны.', reps: 12, completed: 0, xp: 5 },
+                { id: 27, name: 'Выпады с гантелями', description: 'Укрепите ноги', instruction: 'Держите гантели в руках. Выполняйте выпады, сохраняя равновесие.', reps: 12, completed: 0, xp: 6 },
+                { id: 28, name: 'Становая тяга', description: 'Укрепите спину и ноги', instruction: 'С прямой спиной наклонитесь и поднимите штангу или гантели, затем вернитесь в исходное положение.', reps: 10, completed: 0, xp: 8 },
+                { id: 29, name: 'Подъемы на носки с весом', description: 'Укрепите икры', instruction: 'С гантелями в руках поднимайтесь на носки, затем медленно опускайтесь.', reps: 20, completed: 0, xp: 4 },
+                { id: 30, name: 'Планка с отягощением', description: 'Усложненная планка', instruction: 'Выполняйте планку с диском или гантелью на спине для дополнительной нагрузки.', reps: 60, completed: 0, xp: 5 }
+            ],
+            hard: [
+                { id: 31, name: 'Алмазные отжимания', description: 'Выполните алмазные отжимания для проработки трицепса', instruction: 'Поставьте руки близко друг к другу, образуя треугольник между большими и указательными пальцами. Опускайтесь до касания грудью рук.', reps: 15, completed: 0, xp: 16 },
+                { id: 32, name: 'Отжимания на пальцах', description: 'Выполните отжимания на пальцах для укрепления хвата', instruction: 'Выполняйте отжимания, опираясь на пальцы рук. Начинайте с небольшого количества повторений, постепенно увеличивая.', reps: 12, completed: 0, xp: 18 },
+                { id: 33, name: 'Подтягивания широким хватом', description: 'Выполните подтягивания широким хватом для спины', instruction: 'Возьмитесь за перекладину хватом шире плеч. Подтягивайтесь, стараясь коснуться перекладины верхней частью груди.', reps: 12, completed: 0, xp: 17 },
+                { id: 34, name: 'Приседания с прыжком', description: 'Выполните приседания с прыжком для взрывной силы', instruction: 'Из положения приседа мощно выпрыгните вверх, затем мягко приземлитесь и сразу уходите в следующий присед.', reps: 20, completed: 0, xp: 15 },
+                { id: 35, name: 'Отжимания в стойке на руках', description: 'Выполните отжимания в стойке на руках у стены', instruction: 'Встаньте в стойку на руках у стены. Медленно сгибайте руки в локтях, опускаясь головой к полу, затем вернитесь в исходное положение.', reps: 8, completed: 0, xp: 20 },
+                { id: 36, name: 'Подтягивания за голову', description: 'Усложненный вариант подтягиваний', instruction: 'Выполняйте подтягивания, заводя голову за перекладину. Требует хорошей гибкости плечевых суставов.', reps: 10, completed: 0, xp: 18 },
+                { id: 37, name: 'Отжимания на брусьях', description: 'Укрепите грудь и трицепс', instruction: 'На брусьях опускайтесь до параллели плеч с локтями, затем мощно выжмите себя вверх.', reps: 12, completed: 0, xp: 16 },
+                { id: 38, name: 'Приседания на одной ноге', description: 'Укрепите ноги и баланс', instruction: 'Держитесь за опору. Приседайте на одной ноге, затем поменяйте ногу.', reps: 8, completed: 0, xp: 17 },
+                { id: 39, name: 'Подъемы корпуса на римском стуле', description: 'Укрепите пресс', instruction: 'Закрепите ноги и опускайте корпус назад, затем поднимайте его до параллели с полом.', reps: 15, completed: 0, xp: 14 },
+                { id: 40, name: 'Гиперэкстензия', description: 'Укрепите спину', instruction: 'Закрепите ноги и опускайте корпус вниз, затем поднимайте до прямой линии с ногами.', reps: 15, completed: 0, xp: 14 },
+                { id: 41, name: 'Турник-брусья комплекс', description: 'Комплексное упражнение', instruction: 'Выполните 5 подтягиваний, затем 10 отжиманий на брусьях. Это один подход.', reps: 5, completed: 0, xp: 18 },
+                { id: 42, name: 'Отжимания с ногами на возвышении', description: 'Усложненные отжимания', instruction: 'Поставьте ноги на скамью или стул. Выполняйте отжимания с наклоном вниз.', reps: 15, completed: 0, xp: 16 },
+                { id: 43, name: 'Подтягивания обратным хватом', description: 'Акцент на бицепс', instruction: 'Выполняйте подтягивания обратным хватом (ладони к себе).', reps: 12, completed: 0, xp: 16 },
+                { id: 44, name: 'Пистолетик', description: 'Приседания на одной ноге', instruction: 'Без опоры приседайте на одной ноге, вытягивая вторую вперед.', reps: 5, completed: 0, xp: 19 },
+                { id: 45, name: 'Планка с переходом', description: 'Усложненная планка', instruction: 'Из положения планки на прямых руках переходите на предплечья и обратно.', reps: 20, completed: 0, xp: 15 }
+            ],
+            hell: [
+                { id: 46, name: 'Максимальные подтягивания', description: 'Выполните максимальное количество подтягиваний за подход', instruction: 'Выполните максимальное количество подтягиваний за один подход с идеальной техникой. Отдых между подходами 2-3 минуты.', reps: 25, completed: 0, xp: 27 },
+                { id: 47, name: 'Отжимания на одной руке', description: 'Выполните отжимания на одной руке для максимальной сложности', instruction: 'Поставьте ноги шире плеч для устойчивости. Выполняйте отжимания на одной руке, держа вторую за спиной.', reps: 10, completed: 0, xp: 30 },
+                { id: 48, name: 'Приседания с прыжком и весом', description: 'Выполните приседания с прыжком и дополнительным весом', instruction: 'Держите гантели или гирю у груди. Выполняйте приседания с последующим мощным выпрыгиванием.', reps: 15, completed: 0, xp: 25 },
+                { id: 49, name: 'Мышечная башня', description: 'Выполните подтягивания, отжимания и приседания в одном подходе', instruction: 'Выполните 5 подтягиваний, затем 10 отжиманий, затем 15 приседаний. Это один раунд. Сделайте максимальное количество раундов.', reps: 10, completed: 0, xp: 28 },
+                { id: 50, name: 'Стойка на руках', description: 'Удерживайте стойку на руках без опоры', instruction: 'Балансируйте в стойке на руках без опоры на стену. Начинайте с нескольких секунд, постепенно увеличивая время.', reps: 30, completed: 0, xp: 26 },
+                { id: 51, name: 'Подтягивания с весом 50% тела', description: 'Экстремальные подтягивания', instruction: 'Выполняйте подтягивания с дополнительным весом, равным 50% вашего веса.', reps: 5, completed: 0, xp: 35 },
+                { id: 52, name: 'Флаг дракона', description: 'Сложное упражнение на пресс', instruction: 'Лягте на скамью, ухватитесь руками за опору за головой. Поднимите тело в вертикальное положение.', reps: 5, completed: 0, xp: 32 },
+                { id: 53, name: 'Отжимания в горизонте', description: 'Балансовое упражнение', instruction: 'В упоре лежа перенесите вес вперед, отрывая ноги от пола. Выполняйте отжимания в этом положении.', reps: 5, completed: 0, xp: 33 },
+                { id: 54, name: 'Подъем с переворотом', description: 'Гимнастическое упражнение', instruction: 'Из виса на перекладине поднимите ноги и выполните переворот в упор на руки.', reps: 5, completed: 0, xp: 30 },
+                { id: 55, name: 'Стойка на голове', description: 'Балансовое упражнение', instruction: 'Выполните стойку на голове с опорой на руки. Удерживайте положение.', reps: 60, completed: 0, xp: 28 },
+                { id: 56, name: 'Подтягивания на одной руке', description: 'Максимальная сложность', instruction: 'Выполните подтягивания на одной руке, держась за перекладину или полотенце.', reps: 3, completed: 0, xp: 40 },
+                { id: 57, name: 'Отжимания в планше', description: 'Продвинутое упражнение', instruction: 'В упоре лежа перенесите вес вперед, отрывая ноги от пола. Удерживайте положение и выполняйте отжимания.', reps: 5, completed: 0, xp: 38 },
+                { id: 58, name: 'Приседания с штангой над головой', description: 'Упражнение на все тело', instruction: 'Удерживайте штангу над головой и выполняйте глубокие приседания.', reps: 8, completed: 0, xp: 32 },
+                { id: 59, name: 'Становая тяга сумо', description: 'Вариант становой тяги', instruction: 'Выполните становую тягу с широкой постановкой ног.', reps: 8, completed: 0, xp: 30 },
+                { id: 60, name: 'Жим штанги стоя', description: 'Упражнение на плечи', instruction: 'Выполните жим штанги над головой из положения стоя.', reps: 8, completed: 0, xp: 28 },
+                { id: 61, name: 'Трастеры', description: 'Функциональное упражнение', instruction: 'Из положения приседа с штангой на груди выполните жим над головой и выпрямитесь.', reps: 10, completed: 0, xp: 29 },
+                { id: 62, name: 'Рывок штанги', description: 'Тяжелоатлетическое упражнение', instruction: 'Из положения стоя поднимите штангу над головой одним движением.', reps: 5, completed: 0, xp: 35 },
+                { id: 63, name: 'Толчок штанги', description: 'Тяжелоатлетическое упражнение', instruction: 'Поднимите штангу на грудь, затем выжмите над головой.', reps: 5, completed: 0, xp: 34 },
+                { id: 64, name: 'Прогулка фермера', description: 'Упражнение на хват и выносливость', instruction: 'Возьмите тяжелые гантели или гири в обе руки и пройдите дистанцию.', reps: 50, completed: 0, xp: 27 },
+                { id: 65, name: 'Турникменский комплекс', description: 'Комплекс на турнике', instruction: 'Выполните подтягивания, выходы силой, подъемы с переворотом в одной тренировке.', reps: 10, completed: 0, xp: 36 },
+                { id: 66, name: 'Стойка на руках с отжиманиями', description: 'Продвинутая стойка', instruction: 'В стойке на руках у стены выполняйте отжимания, касаясь головой пола.', reps: 5, completed: 0, xp: 37 },
+                { id: 67, name: 'Подтягивания с выходом на две', description: 'Гимнастическое упражнение', instruction: 'Из подтягивания выполните выход на две руки над перекладиной.', reps: 5, completed: 0, xp: 39 },
+                { id: 68, name: 'Фронтальные приседания', description: 'Приседания со штангой на груди', instruction: 'Удерживайте штангу на передних дельтах и выполняйте глубокие приседания.', reps: 8, completed: 0, xp: 31 },
+                { id: 69, name: 'Подъемы корпуса с весом', description: 'Усложненные скручивания', instruction: 'Выполняйте подъемы корпуса с диском или гантелью на груди.', reps: 15, completed: 0, xp: 26 },
+                { id: 70, name: 'Берпи с подтягиванием', description: 'Комбинированное упражнение', instruction: 'Выполните берпи, затем подтягивание на перекладине.', reps: 10, completed: 0, xp: 32 },
+                { id: 71, name: 'Отжимания на кольцах', description: 'Нестабильные отжимания', instruction: 'Выполняйте отжимания на гимнастических кольцах для дополнительной сложности.', reps: 10, completed: 0, xp: 33 },
+                { id: 72, name: 'Подтягивания на кольцах', description: 'Нестабильные подтягивания', instruction: 'Выполняйте подтягивания на гимнастических кольцах.', reps: 10, completed: 0, xp: 34 },
+                { id: 73, name: 'Приседания с гирей', description: 'Функциональное упражнение', instruction: 'Удерживайте гирю перед собой и выполняйте глубокие приседания.', reps: 15, completed: 0, xp: 28 },
+                { id: 74, name: 'Турецкий подъем', description: 'Упражнение на все тело', instruction: 'Из положения лежа поднимитесь в стойку с гирей над головой.', reps: 5, completed: 0, xp: 30 },
+                { id: 75, name: 'Махи гирей', description: 'Взрывное упражнение', instruction: 'Из приседа выполняйте махи гирей двумя руками до уровня глаз.', reps: 15, completed: 0, xp: 29 },
+                { id: 76, name: 'Жим гири', description: 'Упражнение на плечи', instruction: 'Выполните жим гири одной рукой над головой.', reps: 10, completed: 0, xp: 27 },
+                { id: 77, name: 'Подтягивания с уголком', description: 'Усложненный вариант', instruction: 'Выполняйте подтягивания, удерживая ноги под углом 90 градусов.', reps: 8, completed: 0, xp: 35 },
+                { id: 78, name: 'Отжимания с хлопком за спиной', description: 'Взрывные отжимания', instruction: 'Выполняйте отжимания с хлопком руками за спиной.', reps: 8, completed: 0, xp: 34 },
+                { id: 79, name: 'Приседания с выпрыгиванием и поворотом', description: 'Плиометрическое упражнение', instruction: 'Выполняйте приседания с выпрыгиванием и поворотом на 180 градусов.', reps: 10, completed: 0, xp: 31 },
+                { id: 80, name: 'Комплекс "Бог войны"', description: 'Финальный комплекс', instruction: 'Выполните 10 подтягиваний, 20 отжиманий, 30 приседаний и 40 скручиваний без отдыха.', reps: 1, completed: 0, xp: 50 },
+                { id: 81, name: 'Стойка на одной руке', description: 'Максимальный баланс', instruction: 'Выполните стойку на руках на одной руке у стены.', reps: 30, completed: 0, xp: 45 },
+                { id: 82, name: 'Подтягивания с дополнительным 75% веса', description: 'Экстремальная сила', instruction: 'Выполните подтягивания с весом, равным 75% вашего тела.', reps: 3, completed: 0, xp: 48 },
+                { id: 83, name: 'Отжимания на пальцах одной руки', description: 'Максимальная сложность', instruction: 'Выполните отжимания на пальцах одной руки.', reps: 3, completed: 0, xp: 47 },
+                { id: 84, name: 'Приседания с 2x весом тела', description: 'Экстремальная нагрузка', instruction: 'Выполните приседания с весом, равным двойному весу вашего тела.', reps: 5, completed: 0, xp: 46 },
+                { id: 85, name: 'Становая тяга с 2.5x весом тела', description: 'Максимальная сила', instruction: 'Выполните становую тягу с весом, равным 2.5 веса вашего тела.', reps: 3, completed: 0, xp: 49 },
+                { id: 86, name: 'Комплекс "Абсолют"', description: 'Финальное испытание', instruction: 'Выполните 20 подтягиваний, 40 отжиманий, 60 приседаний и 80 скручиваний за минимальное время.', reps: 1, completed: 0, xp: 60 },
+                { id: 87, name: 'Стойка на руках без опоры', description: 'Абсолютный баланс', instruction: 'Удерживайте стойку на руках без опоры в течение минуты.', reps: 60, completed: 0, xp: 55 },
+                { id: 88, name: 'Подтягивания на одной руке с весом', description: 'Божественная сила', instruction: 'Выполните подтягивания на одной руке с дополнительным весом.', reps: 1, completed: 0, xp: 65 },
+                { id: 89, name: 'Отжимания в планше на полу', instruction: 'Абсолютный контроль', instruction: 'Выполните отжимания в планше без опоры для ног.', reps: 3, completed: 0, xp: 62 },
+                { id: 90, name: 'Приседания с 3x весом тела', description: 'Нечеловеческая сила', instruction: 'Выполните приседания с весом, равным тройному весу вашего тела.', reps: 1, completed: 0, xp: 70 },
+                { id: 91, name: 'Марафон подтягиваний', description: 'Выносливость богов', instruction: 'Выполните 100 подтягиваний за минимальное количество подходов.', reps: 100, completed: 0, xp: 75 },
+                { id: 92, name: 'Марафон отжиманий', description: 'Невероятная выносливость', instruction: 'Выполните 200 отжиманий за минимальное количество подходов.', reps: 200, completed: 0, xp: 80 },
+                { id: 93, name: 'Марафон приседаний', description: 'Стальные ноги', instruction: 'Выполните 500 приседаний за минимальное количество подходов.', reps: 500, completed: 0, xp: 85 },
+                { id: 94, name: 'Триатлон силы', description: 'Испытание чемпиона', instruction: 'Выполните 50 подтягиваний, 100 отжиманий и 150 приседаний без отдыха.', reps: 1, completed: 0, xp: 90 },
+                { id: 95, name: 'Путь к божественности', description: 'Финальное испытание', instruction: 'Выполните все адские задания в течение 24 часов.', reps: 1, completed: 0, xp: 100 }
+            ]
+        };
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обработчики для экрана входа/регистрации
+            document.getElementById('showRegister').addEventListener('click', function() {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'block';
+            });
+
+            document.getElementById('showLogin').addEventListener('click', function() {
+                document.getElementById('registerForm').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+            });
+
+            document.getElementById('loginBtn').addEventListener('click', function() {
+                const username = document.getElementById('loginUsername').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                
+                if (username && password) {
+                    // В реальном приложении здесь была бы проверка на сервере
+                    userData.username = username;
+                    userData.accountCreated = userData.accountCreated || Date.now();
+                    document.getElementById('authScreen').style.display = 'none';
+                    document.getElementById('mainContent').style.display = 'block';
+                    initializeApp();
+                } else {
+                    alert('Пожалуйста, заполните все поля!');
+                }
+            });
+
+            document.getElementById('registerBtn').addEventListener('click', function() {
+                const username = document.getElementById('registerUsername').value.trim();
+                const password = document.getElementById('registerPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (username && password && confirmPassword) {
+                    if (password === confirmPassword) {
+                        // В реальном приложении здесь была бы регистрация на сервере
+                        userData.username = username;
+                        userData.accountCreated = Date.now();
+                        document.getElementById('authScreen').style.display = 'none';
+                        document.getElementById('mainContent').style.display = 'block';
+                        initializeApp();
+                    } else {
+                        alert('Пароли не совпадают!');
+                    }
+                } else {
+                    alert('Пожалуйста, заполните все поля!');
+                }
+            });
+
+            // Обработчики для навигации
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    // Убираем активный класс у всех элементов
+                    document.querySelectorAll('.nav-item').forEach(nav => {
+                        nav.classList.remove('active');
+                    });
+                    
+                    // Добавляем активный класс текущему элементу
+                    this.classList.add('active');
+                    
+                    // Скрываем все разделы
+                    document.querySelectorAll('.section').forEach(section => {
+                        section.style.display = 'none';
+                    });
+                    
+                    // Показываем выбранный раздел
+                    const sectionId = this.getAttribute('data-section');
+                    document.getElementById(sectionId).style.display = 'block';
+                    
+                    // Если открываем заметки, обновляем историю
+                    if (sectionId === 'notesSection') {
+                        updateWorkoutHistory();
+                    }
+                });
+            });
+
+            // Обработчики для вкладок сложности заданий
+            document.querySelectorAll('.difficulty-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.difficulty-tab').forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    const difficulty = this.getAttribute('data-difficulty');
+                    filterTasks(difficulty);
+                });
+            });
+
+            // Обработчик для кнопки информации об уровне
+            document.getElementById('levelInfoBtn').addEventListener('click', function() {
+                showLevelModal();
+            });
+
+            // Обработчик для закрытия модального окна уровня
+            document.getElementById('closeLevelModal').addEventListener('click', function() {
+                document.getElementById('levelModal').style.display = 'none';
+            });
+
+            // Обработчик для кнопки удаления аккаунта
+            document.getElementById('deleteAccountBtn').addEventListener('click', function() {
+                if (confirm('Вы уверены, что хотите удалить аккаунт? Это действие нельзя отменить.')) {
+                    alert('Аккаунт удален.');
+                    document.getElementById('mainContent').style.display = 'none';
+                    document.getElementById('authScreen').style.display = 'flex';
+                }
+            });
+
+            // Обработчик для калькулятора ИМТ
+            document.getElementById('calculateBmi').addEventListener('click', function() {
+                calculateBMI();
+            });
+        });
+
+        // Инициализация приложения после регистрации/входа
+        function initializeApp() {
+            // Обновляем данные пользователя в интерфейсе
+            updateUserInterface();
+            
+            // Загружаем задания
+            loadTasks();
+            
+            // Показываем раздел профиля
+            document.getElementById('profileSection').style.display = 'block';
+            
+            // Обновляем информацию в модальном окне уровня
+            updateLevelModal();
+            
+            // Запускаем таймеры для заданий
+            startTaskTimers();
+            
+            // Запускаем таймер для отображения возраста аккаунта
+            startAccountAgeTimer();
+        }
+
+        // Обновление интерфейса пользователя
+        function updateUserInterface() {
+            document.getElementById('displayUsername').textContent = userData.username;
+            document.getElementById('userLevel').textContent = userData.level;
+            document.getElementById('xpProgress').style.width = `${(userData.xp / userData.xpToNextLevel) * 100}%`;
+            document.getElementById('xpText').textContent = `${userData.xp}/${userData.xpToNextLevel} XP`;
+            
+            // Обновляем ранг
+            userData.rank = getCurrentRank(userData.level);
+            document.getElementById('userRank').textContent = userData.rank;
+            
+            // Обновляем статистику
+            document.getElementById('easyTasks').textContent = userData.stats.easy;
+            document.getElementById('mediumTasks').textContent = userData.stats.medium;
+            document.getElementById('hardTasks').textContent = userData.stats.hard;
+            document.getElementById('hellTasks').textContent = userData.stats.hell;
+            
+            // Обновляем возраст аккаунта
+            updateAccountAge();
+        }
+
+        // Получение текущего ранга по уровню
+        function getCurrentRank(level) {
+            if (level >= 5000) return ranks[5000];
+            if (level >= 2000) return ranks[2000];
+            if (level >= 1700) return ranks[1700];
+            if (level >= 500) return ranks[500];
+            if (level >= 120) return ranks[120];
+            if (level >= 50) return ranks[50];
+            if (level >= 15) return ranks[15];
+            return ranks[0];
+        }
+
+        // Обновление возраста аккаунта
+        function updateAccountAge() {
+            if (!userData.accountCreated) return;
+            
+            const now = Date.now();
+            const diff = now - userData.accountCreated;
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            document.getElementById('accountAge').textContent = `Аккаунт создан: ${days} дней ${hours} часов`;
+        }
+
+        // Таймер для обновления возраста аккаунта
+        function startAccountAgeTimer() {
+            setInterval(() => {
+                updateAccountAge();
+            }, 60 * 60 * 1000); // Обновляем каждый час
+        }
+
+        // Загрузка заданий
+        function loadTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            
+            // Объединяем все задания
+            const allTasks = [
+                ...tasksByDifficulty.easy,
+                ...tasksByDifficulty.medium,
+                ...tasksByDifficulty.hard,
+                ...tasksByDifficulty.hell
+            ];
+            
+            // Добавляем задания в интерфейс
+            allTasks.forEach(task => {
+                const taskCard = document.createElement('div');
+                taskCard.className = 'task-card';
+                taskCard.setAttribute('data-difficulty', getTaskDifficulty(task.id));
+                
+                // Проверяем, выполнено ли задание и установлен ли таймер
+                const isCompleted = userData.completedTasks[task.id] && 
+                    (Date.now() - userData.completedTasks[task.id]) < 24 * 60 * 60 * 1000;
+                
+                const remainingTime = isCompleted ? 
+                    Math.max(0, 24 * 60 * 60 * 1000 - (Date.now() - userData.completedTasks[task.id])) : 0;
+                
+                taskCard.innerHTML = `
+                    <div class="task-title">${task.name}</div>
+                    <div class="task-description">${task.description}</div>
+                    <div class="task-instruction">${task.instruction}</div>
+                    <div class="task-counter">
+                        <div class="counter-btn minus-btn" data-task="${task.id}">-</div>
+                        <div class="counter-value">${task.completed}/${task.reps}</div>
+                        <div class="counter-btn plus-btn" data-task="${task.id}">+</div>
+                    </div>
+                    <button class="complete-btn" data-task="${task.id}" ${(task.completed >= task.reps && !isCompleted) ? '' : 'disabled'}>
+                        ${isCompleted ? 'Доступно через:' : (task.completed >= task.reps ? 'Завершить' : 'Не выполнено')}
+                    </button>
+                    <div class="timer" data-task="${task.id}">
+                        ${isCompleted ? formatTime(remainingTime) : 'Доступно для выполнения'}
+                    </div>
+                `;
+                
+                taskList.appendChild(taskCard);
+            });
+            
+            // Добавляем обработчики для кнопок заданий
+            document.querySelectorAll('.minus-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const taskId = parseInt(this.getAttribute('data-task'));
+                    updateTaskProgress(taskId, -1);
+                });
+            });
+            
+            document.querySelectorAll('.plus-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const taskId = parseInt(this.getAttribute('data-task'));
+                    updateTaskProgress(taskId, 1);
+                });
+            });
+            
+            document.querySelectorAll('.complete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const taskId = parseInt(this.getAttribute('data-task'));
+                    completeTask(taskId);
+                });
+            });
+        }
+
+        // Получение сложности задания по ID
+        function getTaskDifficulty(taskId) {
+            if (taskId <= 3) return 'easy';
+            if (taskId <= 6) return 'medium';
+            if (taskId <= 9) return 'hard';
+            return 'hell';
+        }
+
+        // Фильтрация заданий по сложности
+        function filterTasks(difficulty) {
+            const taskCards = document.querySelectorAll('.task-card');
+            
+            taskCards.forEach(card => {
+                if (difficulty === 'all' || card.getAttribute('data-difficulty') === difficulty) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Обновление прогресса задания
+        function updateTaskProgress(taskId, change) {
+            // Находим задание в данных
+            let task = null;
+            
+            for (const diff in tasksByDifficulty) {
+                task = tasksByDifficulty[diff].find(t => t.id === taskId);
+                if (task) break;
+            }
+            
+            if (task) {
+                // Проверяем, не выполнено ли задание ранее (таймер)
+                const isCompleted = userData.completedTasks[task.id] && 
+                    (Date.now() - userData.completedTasks[task.id]) < 24 * 60 * 60 * 1000;
+                
+                if (isCompleted) return; // Не позволяем изменять прогресс, если задание на таймере
+                
+                // Обновляем счетчик
+                task.completed = Math.max(0, Math.min(task.reps, task.completed + change));
+                
+                // Обновляем интерфейс
+                const taskCard = document.querySelector(`[data-task="${taskId}"]`).closest('.task-card');
+                const counterValue = taskCard.querySelector('.counter-value');
+                const completeBtn = taskCard.querySelector('.complete-btn');
+                
+                counterValue.textContent = `${task.completed}/${task.reps}`;
+                
+                if (task.completed >= task.reps) {
+                    completeBtn.disabled = false;
+                    completeBtn.textContent = 'Завершить';
+                } else {
+                    completeBtn.disabled = true;
+                    completeBtn.textContent = 'Не выполнено';
+                }
+            }
+        }
+
+        // Завершение задания
+        function completeTask(taskId) {
+            // Находим задание в данных
+            let task = null;
+            let difficulty = null;
+            
+            for (const diff in tasksByDifficulty) {
+                task = tasksByDifficulty[diff].find(t => t.id === taskId);
+                if (task) {
+                    difficulty = diff;
+                    break;
+                }
+            }
+            
+            if (task && task.completed >= task.reps) {
+                // Начисляем опыт
+                userData.xp += task.xp;
+                
+                // Обновляем статистику
+                userData.stats[difficulty]++;
+                
+                // Устанавливаем время завершения задания
+                userData.completedTasks[taskId] = Date.now();
+                
+                // Добавляем в историю тренировок
+                userData.workoutHistory.push({
+                    taskId: taskId,
+                    taskName: task.name,
+                    completedAt: Date.now(),
+                    reps: task.reps
+                });
+                
+                // Проверяем повышение уровня
+                checkLevelUp();
+                
+                // Обновляем интерфейс
+                updateUserInterface();
+                updateLevelModal();
+                
+                // Сбрасываем задание
+                task.completed = 0;
+                
+                // Обновляем интерфейс задания
+                const taskCard = document.querySelector(`[data-task="${taskId}"]`).closest('.task-card');
+                const counterValue = taskCard.querySelector('.counter-value');
+                const completeBtn = taskCard.querySelector('.complete-btn');
+                const timer = taskCard.querySelector('.timer');
+                
+                counterValue.textContent = `${task.completed}/${task.reps}`;
+                completeBtn.disabled = true;
+                completeBtn.textContent = 'Доступно через:';
+                timer.textContent = formatTime(24 * 60 * 60 * 1000);
+                
+                // Просто начисляем опыт без всплывающего окна
+                // В реальном приложении здесь можно добавить небольшую анимацию
+            }
+        }
+
+        // Проверка повышения уровня
+        function checkLevelUp() {
+            while (userData.xp >= userData.xpToNextLevel) {
+                userData.level++;
+                userData.xp -= userData.xpToNextLevel;
+                userData.xpToNextLevel = userData.level * 20;
+            }
+        }
+
+        // Показать модальное окно уровня
+        function showLevelModal() {
+            document.getElementById('levelModal').style.display = 'block';
+        }
+
+        // Обновить информацию в модальном окне уровня
+        function updateLevelModal() {
+            document.getElementById('modalLevel').textContent = userData.level;
+            document.getElementById('modalXP').textContent = `${userData.xp}/${userData.xpToNextLevel}`;
+            document.getElementById('modalNextLevel').textContent = userData.xpToNextLevel - userData.xp;
+            document.getElementById('modalRank').textContent = userData.rank;
+            
+            // Обновляем список рангов
+            document.querySelectorAll('.rank-item').forEach(item => {
+                const rankLevel = parseInt(item.getAttribute('data-rank'));
+                item.classList.remove('current');
+                
+                if (userData.level >= rankLevel) {
+                    item.classList.add('current');
+                }
+            });
+        }
+
+        // Запуск таймеров для заданий
+        function startTaskTimers() {
+            setInterval(() => {
+                // Обновляем все таймеры
+                document.querySelectorAll('.timer').forEach(timerElement => {
+                    const taskId = parseInt(timerElement.getAttribute('data-task'));
+                    
+                    if (userData.completedTasks[taskId]) {
+                        const remainingTime = Math.max(0, 24 * 60 * 60 * 1000 - (Date.now() - userData.completedTasks[taskId]));
+                        
+                        if (remainingTime > 0) {
+                            timerElement.textContent = formatTime(remainingTime);
+                            
+                            // Обновляем кнопку завершения
+                            const completeBtn = timerElement.previousElementSibling;
+                            completeBtn.disabled = true;
+                            completeBtn.textContent = 'Доступно через:';
+                        } else {
+                            // Таймер истек, задание снова доступно
+                            timerElement.textContent = 'Доступно для выполнения';
+                            
+                            // Обновляем кнопку завершения
+                            const completeBtn = timerElement.previousElementSibling;
+                            const taskCard = timerElement.closest('.task-card');
+                            const counterValue = taskCard.querySelector('.counter-value');
+                            const task = findTaskById(taskId);
+                            
+                            if (task && task.completed >= task.reps) {
+                                completeBtn.disabled = false;
+                                completeBtn.textContent = 'Завершить';
+                            } else {
+                                completeBtn.disabled = true;
+                                completeBtn.textContent = 'Не выполнено';
+                            }
+                            
+                            // Удаляем задание из завершенных
+                            delete userData.completedTasks[taskId];
+                        }
+                    }
+                });
+            }, 1000);
+        }
+
+        // Поиск задания по ID
+        function findTaskById(taskId) {
+            for (const diff in tasksByDifficulty) {
+                const task = tasksByDifficulty[diff].find(t => t.id === taskId);
+                if (task) return task;
+            }
+            return null;
+        }
+
+        // Форматирование времени
+        function formatTime(milliseconds) {
+            const hours = Math.floor(milliseconds / (1000 * 60 * 60));
+            const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
+            
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Калькулятор ИМТ
+        function calculateBMI() {
+            const age = parseInt(document.getElementById('bmiAge').value);
+            const gender = document.getElementById('bmiGender').value;
+            const height = parseInt(document.getElementById('bmiHeight').value);
+            const weight = parseInt(document.getElementById('bmiWeight').value);
+            
+            if (!age || !gender || !height || !weight) {
+                alert('Пожалуйста, заполните все поля!');
+                return;
+            }
+            
+            // Расчет ИМТ: вес (кг) / (рост (м) * рост (м))
+            const heightInMeters = height / 100;
+            const bmi = weight / (heightInMeters * heightInMeters);
+            const roundedBmi = Math.round(bmi * 10) / 10;
+            
+            // Определение категории ИМТ
+            let category = '';
+            let description = '';
+            
+            if (bmi < 18.5) {
+                category = 'Недостаточный вес';
+                description = 'Рекомендуется увеличить калорийность питания и проконсультироваться с врачом.';
+            } else if (bmi >= 18.5 && bmi < 25) {
+                category = 'Нормальный вес';
+                description = 'Ваш вес в норме. Продолжайте поддерживать здоровый образ жизни!';
+            } else if (bmi >= 25 && bmi < 30) {
+                category = 'Избыточный вес';
+                description = 'Рекомендуется увеличить физическую активность и скорректировать питание.';
+            } else {
+                category = 'Ожирение';
+                description = 'Рекомендуется проконсультироваться с врачом и разработать программу снижения веса.';
+            }
+            
+            // Отображение результата
+            const resultElement = document.getElementById('bmiResult');
+            resultElement.innerHTML = `
+                <h4>Ваш ИМТ: ${roundedBmi}</h4>
+                <p><strong>Категория:</strong> ${category}</p>
+                <p>${description}</p>
+            `;
+            resultElement.style.display = 'block';
+        }
+
+        // Обновление истории тренировок
+        function updateWorkoutHistory() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            if (userData.workoutHistory.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">История тренировок пуста</p>';
+                return;
+            }
+            
+            // Сортируем историю по дате (новые сверху)
+            const sortedHistory = [...userData.workoutHistory].sort((a, b) => b.completedAt - a.completedAt);
+            
+            // Группируем по дням
+            const groupedByDay = {};
+            sortedHistory.forEach(workout => {
+                const date = new Date(workout.completedAt);
+                const dateString = date.toLocaleDateString('ru-RU');
+                
+                if (!groupedByDay[dateString]) {
+                    groupedByDay[dateString] = [];
+                }
+                
+                groupedByDay[dateString].push(workout);
+            });
+            
+            // Отображаем историю
+            Object.keys(groupedByDay).forEach(date => {
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'history-date';
+                dateHeader.style.fontWeight = 'bold';
+                dateHeader.style.marginBottom = '10px';
+                dateHeader.textContent = date;
+                historyList.appendChild(dateHeader);
+                
+                groupedByDay[date].forEach(workout => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    
+                    const task = findTaskById(workout.taskId);
+                    const time = new Date(workout.completedAt).toLocaleTimeString('ru-RU', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    
+                    historyItem.innerHTML = `
+                        <div class="history-task">${workout.taskName}</div>
+                        <div class="history-date">${time}</div>
+                        <div class="history-count">Выполнено: ${workout.reps} повторений</div>
+                    `;
+                    
+                    historyList.appendChild(historyItem);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
